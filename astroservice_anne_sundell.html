@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astro Service – Anne Sundell | Ammattiastrologi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep-navy: #0d1b2e;
+    --midnight: #0a1220;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-pale: #f5e6c0;
+    --ivory: #faf7f0;
+    --text-body: #d4cfc4;
+    --text-muted: #8a8276;
+    --star-white: rgba(255,255,255,0.85);
+    --wa-green: #25D366;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--midnight);
+    color: var(--text-body);
+    font-family: 'Raleway', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* ── STAR CANVAS ── */
+  #star-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.85;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.4rem 3rem;
+    background: linear-gradient(to bottom, rgba(10,18,32,0.97) 0%, transparent 100%);
+    backdrop-filter: blur(8px);
+    transition: background 0.3s;
+  }
+
+  .nav-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--gold-light); }
+
+  /* ── HAMBURGER ── */
+  .nav-hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 4px;
+    background: none;
+    border: none;
+    z-index: 300;
+  }
+  .nav-hamburger span {
+    display: block;
+    width: 24px;
+    height: 1.5px;
+    background: var(--gold);
+    transition: all 0.3s;
+    transform-origin: center;
+  }
+  .nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+  .nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+  /* ── MOBILE MENU ── */
+  .mobile-menu {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,18,32,0.98);
+    backdrop-filter: blur(16px);
+    z-index: 150;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .mobile-menu.open {
+    display: flex;
+    opacity: 1;
+  }
+  .mobile-menu a {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ivory);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .mobile-menu a:hover { color: var(--gold); }
+  .mobile-menu-wa {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: var(--wa-green) !important;
+    border: 1px solid rgba(37,211,102,0.4);
+    padding: 0.7rem 1.4rem;
+    border-radius: 2px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+    z-index: 1;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,168,76,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-zodiac-ring {
+    position: absolute;
+    width: 620px; height: 620px;
+    border: 1px solid rgba(201,168,76,0.12);
+    border-radius: 50%;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: slowSpin 80s linear infinite;
+  }
+
+  .hero-zodiac-ring::before {
+    content: '';
+    position: absolute;
+    inset: 20px;
+    border: 1px solid rgba(201,168,76,0.07);
+    border-radius: 50%;
+  }
+
+  @keyframes slowSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.6rem;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.3s forwards;
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--ivory);
+    letter-spacing: 0.03em;
+    margin-bottom: 0.3rem;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.5s forwards;
+  }
+
+  .hero h1 em { font-style: italic; color: var(--gold-light); }
+
+  .hero-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 2.5vw, 1.35rem);
+    font-style: italic;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.06em;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.7s forwards;
+  }
+
+  .hero-credentials {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.9s forwards;
+  }
+
+  .credential-badge {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.4rem 1rem;
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold);
+    border-radius: 2px;
+  }
+
+  .hero-cta {
+    opacity: 0;
+    animation: fadeUp 1s ease 1.1s forwards;
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 1rem 2.8rem;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--midnight);
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.35s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.3s;
+  }
+  .btn-primary:hover::after { background: rgba(255,255,255,0.12); }
+
+  .btn-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.95rem 2.2rem;
+    border: 1px solid rgba(37,211,102,0.5);
+    color: var(--wa-green);
+    text-decoration: none;
+    transition: all 0.35s;
+    border-radius: 2px;
+  }
+  .btn-whatsapp:hover {
+    background: rgba(37,211,102,0.08);
+    border-color: var(--wa-green);
+  }
+  .btn-whatsapp svg { width: 16px; height: 16px; fill: var(--wa-green); flex-shrink: 0; }
+
+  .btn-outline {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 0.95rem 2.5rem;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    text-decoration: none;
+    transition: all 0.35s;
+  }
+  .btn-outline:hover { background: rgba(201,168,76,0.1); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── DIVIDER ── */
+  .gold-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    padding: 1rem 0;
+  }
+  .gold-divider::before, .gold-divider::after {
+    content: '';
+    width: 80px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold));
+  }
+  .gold-divider::after { background: linear-gradient(to left, transparent, var(--gold)); }
+  .gold-divider span { color: var(--gold); font-size: 1.1rem; }
+
+  /* ── SECTIONS ── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 6rem 2rem;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 300;
+    color: var(--ivory);
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+  .section-title em { font-style: italic; color: var(--gold-light); }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .about-photo-frame {
+    position: relative;
+  }
+  .about-photo-frame::before {
+    content: '';
+    position: absolute;
+    inset: -16px;
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 2px;
+  }
+  .about-photo-frame::after {
+    content: '';
+    position: absolute;
+    inset: -32px;
+    border: 1px solid rgba(201,168,76,0.08);
+    border-radius: 2px;
+  }
+
+  .about-photo {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(20%) sepia(15%);
+  }
+
+  .about-photo-placeholder {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: linear-gradient(160deg, rgba(201,168,76,0.08), rgba(201,168,76,0.02));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(201,168,76,0.15);
+    gap: 1rem;
+  }
+  .about-photo-placeholder span { font-family: 'Cormorant Garamond', serif; font-size: 5rem; color: rgba(201,168,76,0.2); }
+  .about-photo-placeholder small {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: rgba(201,168,76,0.35);
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0 1rem;
+  }
+
+  .about-text p {
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: var(--text-body);
+    margin-bottom: 1.4rem;
+  }
+  .about-text p strong { color: var(--ivory); font-weight: 500; }
+
+  .about-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 3rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid rgba(201,168,76,0.15);
+  }
+  .stat-item { text-align: center; }
+  .stat-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem;
+    font-weight: 300;
+    color: var(--gold-light);
+    display: block;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .stat-label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); }
+
+  /* ── SERVICES ── */
+  .services-section {
+    background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.03), transparent);
+  }
+
+  .services-intro { max-width: 620px; margin-bottom: 4rem; }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5px;
+    background: rgba(201,168,76,0.12);
+  }
+
+  .service-card {
+    background: var(--deep-navy);
+    padding: 3rem 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s;
+    cursor: default;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    transform: scaleX(0);
+    transition: transform 0.4s;
+  }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-card:hover { background: rgba(201,168,76,0.04); }
+
+  .service-icon { font-size: 2rem; margin-bottom: 1.5rem; display: block; opacity: 0.7; }
+  .service-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    color: var(--ivory);
+    margin-bottom: 0.7rem;
+    letter-spacing: 0.03em;
+  }
+  .service-card p { font-size: 0.9rem; line-height: 1.75; color: var(--text-muted); }
+
+  /* ── PRICE TAG ── */
+  .service-price {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.2rem;
+    margin: 1.2rem 0 0.6rem;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 0.35rem 0.85rem;
+    border-radius: 2px;
+  }
+  .price-amount {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--gold-light);
+  }
+  .price-unit {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .price-duration {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+
+  .service-card .service-lang {
+    margin-top: 1rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.7;
+  }
+
+  /* ── WHATSAPP BOOKING BANNER ── */
+  .wa-banner {
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(135deg, rgba(37,211,102,0.06), rgba(37,211,102,0.02));
+    border-top: 1px solid rgba(37,211,102,0.15);
+    border-bottom: 1px solid rgba(37,211,102,0.15);
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+  .wa-banner-inner { max-width: 700px; margin: 0 auto; }
+  .wa-banner h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--ivory);
+    margin-bottom: 0.8rem;
+  }
+  .wa-banner p {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+  }
+  .wa-steps {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .wa-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 160px;
+  }
+  .wa-step-num {
+    width: 28px; height: 28px;
+    border: 1px solid rgba(37,211,102,0.4);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    color: var(--wa-green);
+  }
+  .wa-step span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.4;
+  }
+  .btn-wa-large {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 1.1rem 3rem;
+    background: rgba(37,211,102,0.12);
+    border: 1px solid var(--wa-green);
+    color: var(--wa-green);
+    text-decoration: none;
+    transition: all 0.35s;
+    border-radius: 2px;
+  }
+  .btn-wa-large:hover { background: rgba(37,211,102,0.2); }
+  .btn-wa-large svg { width: 20px; height: 20px; fill: var(--wa-green); }
+  .wa-note {
+    margin-top: 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials-section { text-align: center; }
+
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 3.5rem;
+  }
+
+  .testimonial-card {
+    padding: 2.5rem;
+    border: 1px solid rgba(201,168,76,0.12);
+    position: relative;
+    text-align: left;
+    transition: border-color 0.3s;
+  }
+  .testimonial-card:hover { border-color: rgba(201,168,76,0.3); }
+
+  .quote-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 5rem;
+    color: var(--gold);
+    line-height: 0.6;
+    margin-bottom: 1.2rem;
+    display: block;
+    opacity: 0.4;
+  }
+  .testimonial-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.7;
+    color: var(--text-body);
+    margin-bottom: 1.5rem;
+  }
+  .testimonial-author { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); }
+  .testimonial-detail {
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+  .testimonial-stars {
+    color: var(--gold);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    opacity: 0.8;
+  }
+
+  /* ── BOOK ── */
+  .book-section { background: rgba(201,168,76,0.03); }
+
+  .book-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .book-cover {
+    perspective: 800px;
+  }
+
+  .book-cover-inner {
+    background: linear-gradient(160deg, #1a2a40, #0d1b2e);
+    border: 1px solid rgba(201,168,76,0.25);
+    padding: 3.5rem 2rem;
+    text-align: center;
+    position: relative;
+    transform: rotateY(-8deg);
+    box-shadow: 12px 20px 50px rgba(0,0,0,0.6), inset 2px 0 4px rgba(201,168,76,0.1);
+    transition: transform 0.5s ease;
+  }
+  .book-cover:hover .book-cover-inner { transform: rotateY(0deg); }
+
+  .book-cover-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    line-height: 1.4;
+    margin-bottom: 2rem;
+  }
+  .book-star { font-size: 1.5rem; color: var(--gold); opacity: 0.6; margin: 1.5rem 0; }
+  .book-cover-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .book-award {
+    display: inline-block;
+    margin-top: 1.5rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold);
+    border-radius: 1px;
+  }
+
+  /* ── LANG STRIP ── */
+  .lang-strip {
+    position: relative;
+    z-index: 1;
+    background: rgba(201,168,76,0.04);
+    border-top: 1px solid rgba(201,168,76,0.08);
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+    padding: 1rem 2rem;
+    text-align: center;
+  }
+  .lang-strip p {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ── CONTACT ── */
+  .contact-section { text-align: center; }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 4rem;
+    margin-bottom: 3rem;
+  }
+
+  .contact-item {
+    padding: 2.5rem 1.5rem;
+    border: 1px solid rgba(201,168,76,0.12);
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .contact-item:hover { border-color: rgba(201,168,76,0.3); background: rgba(201,168,76,0.03); }
+
+  .contact-item-icon { font-size: 1.5rem; display: block; margin-bottom: 1rem; opacity: 0.7; }
+  .contact-item-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.8rem;
+  }
+  .contact-item-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    color: var(--ivory);
+    line-height: 1.5;
+  }
+  .contact-item-value a { color: var(--ivory); text-decoration: none; transition: color 0.3s; }
+  .contact-item-value a:hover { color: var(--gold-light); }
+
+  /* ── WA CONTACT ITEM ── */
+  .contact-item.wa-item { border-color: rgba(37,211,102,0.2); }
+  .contact-item.wa-item:hover { border-color: rgba(37,211,102,0.4); background: rgba(37,211,102,0.03); }
+  .contact-item.wa-item .contact-item-value a { color: var(--wa-green); }
+
+  /* ── EMAIL domain badge ── */
+  .domain-badge {
+    display: inline-block;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+  }
+
+  /* ── SOCIAL ── */
+  .social-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-top: 2rem;
+  }
+  .social-link {
+    width: 38px; height: 38px;
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.3s;
+    text-transform: uppercase;
+  }
+  .social-link:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    padding: 3rem 2rem;
+    text-align: center;
+    border-top: 1px solid rgba(201,168,76,0.08);
+  }
+  .footer-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 0.8rem;
+  }
+  .footer-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+  .footer-bottom { font-size: 0.68rem; letter-spacing: 0.08em; color: var(--text-muted); opacity: 0.6; line-height: 1.6; }
+  .footer-legal {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .footer-legal a { font-size: 0.62rem; letter-spacing: 0.08em; color: var(--text-muted); text-decoration: none; opacity: 0.5; }
+  .footer-legal a:hover { opacity: 1; color: var(--gold); }
+
+  /* ── FLOATING WA BUTTON ── */
+  .float-wa {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 500;
+    width: 56px; height: 56px;
+    background: var(--wa-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+    text-decoration: none;
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: waPulse 3s ease infinite;
+  }
+  .float-wa:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,0.6); }
+  .float-wa svg { width: 28px; height: 28px; fill: white; }
+  @keyframes waPulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(37,211,102,0.4); }
+    50% { box-shadow: 0 4px 30px rgba(37,211,102,0.7); }
+  }
+  .float-wa-label {
+    position: absolute;
+    right: 68px;
+    background: rgba(10,18,32,0.95);
+    border: 1px solid rgba(37,211,102,0.3);
+    padding: 0.4rem 0.9rem;
+    border-radius: 2px;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--wa-green);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .float-wa:hover .float-wa-label { opacity: 1; }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1.2rem 1.5rem; }
+    .nav-links { display: none; }
+    .nav-hamburger { display: flex; }
+    .about-grid, .book-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .about-photo-frame { max-width: 280px; margin: 0 auto; }
+    .services-grid, .testimonials-grid, .contact-grid { grid-template-columns: 1fr; }
+    .about-stats { grid-template-columns: repeat(3, 1fr); }
+    .hero-zodiac-ring { width: 340px; height: 340px; }
+    section { padding: 4rem 1.5rem; }
+    .wa-steps { flex-direction: column; align-items: center; }
+    .hero-cta { flex-direction: column; align-items: center; }
+  }
+
+  @media (max-width: 600px) {
+    .about-stats { grid-template-columns: 1fr 1fr; }
+    .float-wa { bottom: 1.2rem; right: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="star-canvas"></canvas>
+
+<!-- FLOATING WHATSAPP -->
+<a href="https://wa.me/358505312037?text=Hei%20Anne!%20Haluaisin%20varata%20astrologisen%20tulkinnan." class="float-wa" target="_blank" rel="noopener" aria-label="Varaa WhatsAppilla">
+  <span class="float-wa-label">Varaa WhatsApp</span>
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#tietoa" onclick="closeMenu()">Tietoa</a>
+  <a href="#palvelut" onclick="closeMenu()">Palvelut</a>
+  <a href="#hinnat" onclick="closeMenu()">Hinnat</a>
+  <a href="#kirja" onclick="closeMenu()">Kirja</a>
+  <a href="#yhteystiedot" onclick="closeMenu()">Yhteystiedot</a>
+  <a href="https://wa.me/358505312037?text=Hei%20Anne!%20Haluaisin%20varata%20astrologisen%20tulkinnan." target="_blank" class="mobile-menu-wa">
+    <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:#25D366;" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Varaa WhatsApp
+  </a>
+</div>
+
+<nav>
+  <a href="#" class="nav-logo">✦ Astro Service</a>
+  <ul class="nav-links">
+    <li><a href="#tietoa">Tietoa</a></li>
+    <li><a href="#palvelut">Palvelut</a></li>
+    <li><a href="#hinnat">Hinnat</a></li>
+    <li><a href="#kirja">Kirja</a></li>
+    <li><a href="#yhteystiedot">Yhteystiedot</a></li>
+  </ul>
+  <button class="nav-hamburger" id="hamburger" aria-label="Valikko" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-zodiac-ring"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Astro Service – Ammattiastrologi</p>
+    <h1>Anne <em>Sundell</em></h1>
+    <p class="hero-subtitle">Karma-astrologia · Psykologinen astrologia · Ihmissuhdeastrologia</p>
+    <div class="hero-credentials">
+      <span class="credential-badge">Dip. MISPA</span>
+      <span class="credential-badge">OPA Sertifioitu 2024–2031</span>
+      <span class="credential-badge">Kirjailija</span>
+      <span class="credential-badge">Kehityspsykologi</span>
+    </div>
+    <div class="hero-cta">
+      <a href="https://wa.me/358505312037?text=Hei%20Anne!%20Haluaisin%20varata%20astrologisen%20tulkinnan." class="btn-whatsapp" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Varaa WhatsApp
+      </a>
+      <a href="#palvelut" class="btn-outline">Palvelut & Hinnat</a>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="gold-divider" style="position:relative;z-index:1;padding:0 2rem;">
+  <span>✦</span>
+</div>
+
+<!-- ABOUT -->
+<section id="tietoa">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-photo-frame reveal">
+        <div class="about-photo-placeholder">
+          <span>♑</span>
+          <small>Kuva tulossa</small>
+        </div>
+      </div>
+      <div class="about-text">
+        <span class="section-label">Tietoa minusta</span>
+        <h2 class="section-title">Astrologia on avain <em>sielusi suunnitelmaan</em></h2>
+        <p>Olen Anne Sundell – ammattiastrologi, kirjailija ja kehityspsykologi Pohjanmaalta. Olen seurannut tähtien kieltä jo 1990-luvulta lähtien, ja vuodesta 2017 astrologia on ollut kokopäiväinen kutsumukseni.</p>
+        <p>Koulutukseltani olen kansainvälinen sairaanhoitaja sekä valtiotieteiden maisteri (Åbo Akademi 2007). Astrologinen erikoistumiseni on <strong>MISPA – Psykologinen Astrologia</strong> Iso-Britanniasta, ja minulla on <strong>OPA:n (Organization for Professional Astrology) sertifiointi</strong> vuoteen 2031.</p>
+        <p>Tarjoan tulkintoja ja kursseja sekä verkossa että henkilökohtaisesti – suomeksi, ruotsiksi ja englanniksi. Varaukset kätevästi WhatsAppin kautta.</p>
+        <div class="about-stats reveal reveal-delay-1">
+          <div class="stat-item">
+            <span class="stat-number">25+</span>
+            <span class="stat-label">Vuotta astrologiaa</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">2017</span>
+            <span class="stat-label">Toiminta alkanut</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">3</span>
+            <span class="stat-label">Kieltä</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="palvelut" class="services-section">
+  <div class="container">
+    <div class="services-intro reveal">
+      <span class="section-label">Palvelut</span>
+      <h2 class="section-title">Mitä voin tehdä <em>sinulle</em></h2>
+      <p style="line-height:1.75; color: var(--text-muted);">Jokainen ihminen kantaa mukanaan ainutlaatuista kosmista karttaansa. Autan sinua lukemaan sitä – löytämään vahvuutesi, ymmärtämään haasteesi ja kulkemaan kohti sielusi tarkoitusta.</p>
+    </div>
+    <div class="services-grid" id="hinnat">
+      <div class="service-card reveal">
+        <span class="service-icon">🌙</span>
+        <h3>Syntymäkartan tulkinta</h3>
+        <p>Henkilökohtainen, syvällinen katsaus syntymäkarttaasi. Ymmärrät persoonallisuutesi, vahvuutesi ja elämäsi suurimmat teemat uudesta näkökulmasta.</p>
+        <div class="service-price">
+          <span class="price-amount">90–140 €</span>
+          <span class="price-unit">sis. alv</span>
+        </div>
+        <div class="price-duration">60–90 min · Zoom tai puhelin</div>
+        <p class="service-lang">Suomi · Ruotsi · Englanti</p>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <span class="service-icon">♾️</span>
+        <h3>Karma-astrologia</h3>
+        <p>Tutkimme sielusi matkaa elämästä toiseen. Karma-astrologia paljastaa menneisyyden haasteet ja tämän elämän tehtävät – psykologisesta ja esoteerisesta näkökulmasta.</p>
+        <div class="service-price">
+          <span class="price-amount">120–160 €</span>
+          <span class="price-unit">sis. alv</span>
+        </div>
+        <div class="price-duration">90 min · Zoom tai puhelin</div>
+        <p class="service-lang">Suomi · Ruotsi · Englanti</p>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <span class="service-icon">💫</span>
+        <h3>Ihmissuhdeastrologia</h3>
+        <p>Synastriatulkinta parisuhteille, perheille tai yhteistyökumppaneille. Ymmärrä dynamiikka, joka teitä yhdistää – ja miksi tietyt suhteet tuntuvat kohtalokkailta.</p>
+        <div class="service-price">
+          <span class="price-amount">120–150 €</span>
+          <span class="price-unit">sis. alv</span>
+        </div>
+        <div class="price-duration">90 min · Zoom tai puhelin</div>
+        <p class="service-lang">Suomi · Ruotsi · Englanti</p>
+      </div>
+      <div class="service-card reveal">
+        <span class="service-icon">📅</span>
+        <h3>Vuosikartat & transiitit</h3>
+        <p>Mitä tähdet kertovat tulevasta vuodesta? Ajankohtaiset transiitit ja progressiot auttavat sinua navigoimaan elämän käännekohtia ja hyödyntämään kosmisia mahdollisuuksia.</p>
+        <div class="service-price">
+          <span class="price-amount">70–100 €</span>
+          <span class="price-unit">sis. alv</span>
+        </div>
+        <div class="price-duration">50 min · Zoom tai puhelin</div>
+        <p class="service-lang">Suomi · Ruotsi · Englanti</p>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <span class="service-icon">🎓</span>
+        <h3>Kurssit & koulutus</h3>
+        <p>Astrologian perus- ja jatkokurssit verkossa ja paikan päällä. Ryhmille ja yksityisesti. Olen myös pääkouluttajana 3-vuotisessa <em>Sielun matkalla</em> -koulutusohjelmassa.</p>
+        <div class="service-price">
+          <span class="price-amount">Kysy hinta</span>
+        </div>
+        <div class="price-duration">Räätälöity · ryhmät & yksilöt</div>
+        <p class="service-lang">Suomi · Ruotsi</p>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <span class="service-icon">⚡</span>
+        <h3>Pikatulkinnat & luennot</h3>
+        <p>20 minuutin pikatulkinnat messuilla ja tapahtumissa. Luennot yrityksille, yhdistyksille ja yksityistilaisuuksiin. Joustava aikataulu ympäri Suomen.</p>
+        <div class="service-price">
+          <span class="price-amount">45–70 €</span>
+          <span class="price-unit">sis. alv</span>
+        </div>
+        <div class="price-duration">20–30 min · tapahtuma tai puhelin</div>
+        <p class="service-lang">Suomi · Ruotsi</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHATSAPP BOOKING BANNER -->
+<div class="wa-banner">
+  <div class="wa-banner-inner reveal">
+    <span class="section-label" style="display:block;text-align:center;">Ajanvaraus</span>
+    <h3>Varaa tulkinta <em style="color:var(--wa-green);font-style:italic;">WhatsAppilla</em></h3>
+    <p>Nopein tapa varata aika – vastaan yleensä saman päivän aikana. Kysy myös lyhyistä aikaväleistä tai kiireellisistä varauksista.</p>
+    <div class="wa-steps">
+      <div class="wa-step">
+        <div class="wa-step-num">1</div>
+        <span>Lähetä viesti ja kerro haluamasi palvelu</span>
+      </div>
+      <div class="wa-step">
+        <div class="wa-step-num">2</div>
+        <span>Sovitaan sopiva aika yhdessä</span>
+      </div>
+      <div class="wa-step">
+        <div class="wa-step-num">3</div>
+        <span>Saat yhteyden tiedot ennen tapaamista</span>
+      </div>
+    </div>
+    <a href="https://wa.me/358505312037?text=Hei%20Anne!%20Haluaisin%20varata%20astrologisen%20tulkinnan.%20Palvelu%3A%20" class="btn-wa-large" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Avaa WhatsApp
+    </a>
+    <p class="wa-note">+358 50 531 2037 · Vastaan suomeksi, ruotsiksi ja englanniksi</p>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section">
+  <div class="container">
+    <span class="section-label" style="display:block;text-align:center;">Asiakaskokemuksia</span>
+    <h2 class="section-title" style="text-align:center;">Mitä asiakkaat <em>sanovat</em></h2>
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">★★★★★</div>
+        <span class="quote-mark">"</span>
+        <p class="testimonial-text">The karmic reading was a wonderful experience I will be absorbing for some time to come, and I highly recommend it!</p>
+        <span class="testimonial-author">Sarah M.</span>
+        <div class="testimonial-detail">Karma-astrologia · Kansainvälinen asiakas</div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="testimonial-stars">★★★★★</div>
+        <span class="quote-mark">"</span>
+        <p class="testimonial-text">Thank you for a thoughtful reading. Several comments deeply resonated with me and I look forward to listening to the recording!</p>
+        <span class="testimonial-author">M.L.</span>
+        <div class="testimonial-detail">Syntymäkartan tulkinta · Englanti</div>
+      </div>
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="testimonial-stars">★★★★★</div>
+        <span class="quote-mark">"</span>
+        <p class="testimonial-text">Sain tulkinnasta paljon ajateltavaa. Vaikka pidän itseäni "uskovana" astrologian suhteen, tarkkuus yllättää minut aina.</p>
+        <span class="testimonial-author">Tiina K.</span>
+        <div class="testimonial-detail">Syntymäkartan tulkinta · Suomi</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOOK -->
+<section id="kirja" class="book-section">
+  <div class="container">
+    <div class="book-grid">
+      <div class="book-cover reveal">
+        <div class="book-cover-inner">
+          <div class="book-cover-title">KARMA-<br>ASTROLOGIAN<br>AVAIMET</div>
+          <div class="book-star">✦</div>
+          <div class="book-cover-sub">Anne Sundell<br>2024 · Uusi painos</div>
+          <div class="book-award">Ultra-lehden vuoden rajatietokirja -kilpailu</div>
+        </div>
+      </div>
+      <div class="reveal reveal-delay-1">
+        <span class="section-label">Kirja</span>
+        <h2 class="section-title">Karma-astrologian <em>avaimet</em></h2>
+        <p style="line-height:1.85; margin-bottom:1.4rem; color: var(--text-body);">Kirjani on johdatus karma-astrologian maailmaan – miten sielun kartta paljastaa menneisyyden, nykyhetken ja tulevaisuuden punaiset langat. Käytännöllinen ja syvällinen opas kaikille astrologiasta kiinnostuneille.</p>
+        <p style="line-height:1.85; margin-bottom:2.5rem; color: var(--text-body);">Uutuuspainos 2024 – <strong style="color:var(--ivory);">valittu Ultra-lehden vuoden rajatietokirja -kilpailuun.</strong></p>
+        <a href="https://wa.me/358505312037?text=Hei%20Anne!%20Haluaisin%20tilata%20Karma-astrologian%20avaimet%20-kirjan." class="btn-wa-large" target="_blank" rel="noopener" style="font-size:0.72rem;padding:0.9rem 2rem;">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Tilaa kirja WhatsAppilla
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LANGUAGES STRIP -->
+<div class="lang-strip">
+  <p>Palvelut saatavilla · Tjänster tillgängliga · Services available &nbsp;✦&nbsp; Suomi &nbsp;·&nbsp; Svenska &nbsp;·&nbsp; English</p>
+</div>
+
+<!-- CONTACT -->
+<section id="yhteystiedot" class="contact-section">
+  <div class="container">
+    <span class="section-label" style="display:block;">Yhteystiedot</span>
+    <h2 class="section-title reveal">Aloitetaan <em>yhdessä</em></h2>
+    <p class="reveal" style="max-width:520px;margin:0 auto 0;line-height:1.8;color:var(--text-muted);">Varaa tulkinta, kysy kurssista tai lähetä viesti. Vastaan suomeksi, ruotsiksi ja englanniksi.</p>
+
+    <div class="contact-grid">
+      <div class="contact-item wa-item reveal">
+        <span class="contact-item-icon">💬</span>
+        <span class="contact-item-label">WhatsApp · Nopein tapa</span>
+        <div class="contact-item-value">
+          <a href="https://wa.me/358505312037?text=Hei%20Anne!" target="_blank" rel="noopener">+358 50 531 2037</a>
+        </div>
+      </div>
+      <div class="contact-item reveal reveal-delay-1">
+        <span class="contact-item-icon">📧</span>
+        <span class="contact-item-label">Sähköposti</span>
+        <div class="contact-item-value">
+          <a href="mailto:astrologiservice@gmail.com">astrologiservice<br>@gmail.com</a>
+        </div>
+      </div>
+      <div class="contact-item reveal reveal-delay-2">
+        <span class="contact-item-icon">📍</span>
+        <span class="contact-item-label">Sijainti</span>
+        <div class="contact-item-value">Korsholm,<br>Pohjanmaa</div>
+      </div>
+    </div>
+
+    <div class="social-row reveal">
+      <a href="https://www.facebook.com/AstroserviceFinland/" target="_blank" class="social-link" title="Facebook">fb</a>
+      <a href="https://www.instagram.com/astroservicefinland/" target="_blank" class="social-link" title="Instagram">ig</a>
+      <a href="https://www.youtube.com/channel/UCSDT-23hNWxiGk9n7xEeIbg" target="_blank" class="social-link" title="YouTube">yt</a>
+      <a href="https://linktr.ee/astroservice" target="_blank" class="social-link" title="Linktree">lt</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-logo">✦ Astro Service</span>
+  <p class="footer-tagline">Astrologia itsetuntemuksen välineenä</p>
+  <p class="footer-bottom">© 2025 Anne Sundell · Astro Service Oy · Korsholm, Pohjanmaa · astrologiservice@gmail.com</p>
+  <div class="footer-legal">
+    <a href="#">Tietosuoja</a>
+    <a href="#">Rekisteriseloste</a>
+    <a href="#">Peruutusehdot</a>
+  </div>
+</footer>
+
+<script>
+// ── HAMBURGER MENU ──
+function toggleMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('hamburger');
+  menu.classList.toggle('open');
+  btn.classList.toggle('open');
+  document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+}
+function closeMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('hamburger');
+  menu.classList.remove('open');
+  btn.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── PLANETARIUM BACKGROUND ──
+const canvas = document.getElementById('star-canvas');
+const ctx = canvas.getContext('2d');
+
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const STARS = Array.from({length: 340}, () => ({
+  x: Math.random(), y: Math.random(),
+  r: Math.random() * 1.4 + 0.15,
+  alpha: Math.random() * 0.55 + 0.1,
+  twinklePhase: Math.random() * Math.PI * 2,
+  twinkleSpeed: Math.random() * 0.025 + 0.005
+}));
+
+const SHOOTS = [];
+function spawnShoot() {
+  SHOOTS.push({ x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight * 0.5,
+    len: 90 + Math.random() * 120, speed: 14 + Math.random() * 10,
+    angle: Math.PI / 5 + Math.random() * 0.4, alpha: 0.8, life: 1 });
+}
+setInterval(spawnShoot, 3800);
+
+function drawNebulae() {
+  const W = canvas.width, H = canvas.height;
+  const clouds = [
+    { x: W*0.15, y: H*0.25, rx: 180, ry: 90, color: 'rgba(100,60,160,0.035)' },
+    { x: W*0.82, y: H*0.18, rx: 140, ry: 70, color: 'rgba(50,100,180,0.03)' },
+    { x: W*0.55, y: H*0.75, rx: 200, ry: 100, color: 'rgba(180,80,60,0.025)' },
+    { x: W*0.08, y: H*0.68, rx: 120, ry: 60, color: 'rgba(60,140,120,0.025)' },
+  ];
+  clouds.forEach(c => {
+    const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.rx);
+    g.addColorStop(0, c.color); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.save(); ctx.scale(1, c.ry/c.rx);
+    ctx.beginPath(); ctx.arc(c.x, c.y*(c.rx/c.ry), c.rx, 0, Math.PI*2);
+    ctx.fillStyle = g; ctx.fill(); ctx.restore();
+  });
+}
+
+const SUN_X_RATIO = 0.5, SUN_Y_RATIO = 1.35;
+
+const PLANETS = [
+  { name:'Mercury', r:2.5, orbitR:0.18, speed:2.4,  color:'#b0a898', angle:0.4,  alpha:0.55 },
+  { name:'Venus',   r:4,   orbitR:0.27, speed:1.58, color:'#e0c97a', angle:1.2,  alpha:0.6 },
+  { name:'Earth',   r:4.5, orbitR:0.36, speed:1.0,  color:'#4fa3e0', angle:2.1,  alpha:0.65,
+    moon: { r:1.5, orbitR:22, speed:13.4, angle:0.8, color:'#b0b0b0' } },
+  { name:'Mars',    r:3.5, orbitR:0.46, speed:0.53, color:'#c1440e', angle:3.5,  alpha:0.6 },
+  { name:'Jupiter', r:9,   orbitR:0.60, speed:0.084,color:'#c8883a', angle:1.0,  alpha:0.5, bands:true },
+  { name:'Saturn',  r:7.5, orbitR:0.74, speed:0.034,color:'#d4b483', angle:4.2,  alpha:0.45, rings:true },
+  { name:'Uranus',  r:5.5, orbitR:0.87, speed:0.012,color:'#7de8e8', angle:2.8,  alpha:0.35 },
+  { name:'Neptune', r:5,   orbitR:0.97, speed:0.006,color:'#3a6adf', angle:5.1,  alpha:0.28 },
+];
+
+const CONSTELLATIONS = [
+  [[0.06,0.08],[0.11,0.14],[0.16,0.10],[0.20,0.16],[0.25,0.12]],
+  [[0.72,0.06],[0.78,0.12],[0.84,0.08],[0.89,0.14]],
+  [[0.04,0.45],[0.09,0.40],[0.14,0.46],[0.18,0.42],[0.22,0.48]],
+  [[0.75,0.52],[0.80,0.47],[0.86,0.53],[0.90,0.49],[0.94,0.55]],
+  [[0.30,0.85],[0.35,0.80],[0.40,0.86],[0.38,0.92],[0.33,0.94]],
+];
+
+const ASTEROIDS = Array.from({length:100}, (_,i) => ({
+  angle: (i/100)*Math.PI*2, rFrac: 0.515 + Math.sin(i*17.3)*0.018,
+  size: 0.6 + Math.abs(Math.sin(i*3))*0.5, alpha: 0.12 + Math.abs(Math.sin(i*7))*0.1
+}));
+
+function lightenHex(hex, amt) {
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${Math.min(255,(r+amt*255)|0)},${Math.min(255,(g+amt*255)|0)},${Math.min(255,(b+amt*255)|0)},1)`;
+}
+
+let t = 0;
+function frame() {
+  const W=canvas.width, H=canvas.height;
+  t += 0.4;
+  ctx.clearRect(0,0,W,H);
+  drawNebulae();
+
+  STARS.forEach(s => {
+    const twinkle = 0.65 + 0.35*Math.sin(s.twinklePhase + t*s.twinkleSpeed);
+    ctx.beginPath(); ctx.arc(s.x*W, s.y*H, s.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,248,220,${s.alpha*twinkle})`; ctx.fill();
+  });
+
+  ctx.strokeStyle='rgba(160,200,255,0.12)'; ctx.lineWidth=0.5; ctx.setLineDash([3,6]);
+  CONSTELLATIONS.forEach(pts => {
+    ctx.beginPath();
+    pts.forEach(([rx,ry],i) => i===0 ? ctx.moveTo(rx*W,ry*H) : ctx.lineTo(rx*W,ry*H));
+    ctx.stroke();
+    pts.forEach(([rx,ry]) => {
+      ctx.beginPath(); ctx.arc(rx*W,ry*H,1.2,0,Math.PI*2);
+      ctx.fillStyle='rgba(180,220,255,0.45)'; ctx.setLineDash([]); ctx.fill();
+    });
+    ctx.setLineDash([3,6]);
+  });
+  ctx.setLineDash([]);
+
+  const sx=W*SUN_X_RATIO, sy=H*SUN_Y_RATIO;
+  const sunGlow=ctx.createRadialGradient(sx,sy,0,sx,sy,H*0.55);
+  sunGlow.addColorStop(0,'rgba(255,210,80,0.07)'); sunGlow.addColorStop(0.4,'rgba(255,160,40,0.04)'); sunGlow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(sx,sy,H*0.55,0,Math.PI*2); ctx.fillStyle=sunGlow; ctx.fill();
+
+  PLANETS.forEach(p => {
+    const orbitRx=p.orbitR*W*0.88, orbitRy=p.orbitR*W*0.22;
+    ctx.save(); ctx.translate(sx,sy);
+    ctx.beginPath(); ctx.ellipse(0,0,orbitRx,orbitRy,0,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,255,255,${p.alpha*0.18})`; ctx.lineWidth=0.4; ctx.stroke(); ctx.restore();
+  });
+
+  const beltRx=0.515*W*0.88, beltRy=0.515*W*0.22;
+  ASTEROIDS.forEach(a => {
+    const angle=a.angle+t*0.00025;
+    const ax=sx+Math.cos(angle)*beltRx*(1+a.rFrac-0.515);
+    const ay=sy+Math.sin(angle)*beltRy*(1+a.rFrac-0.515);
+    ctx.beginPath(); ctx.arc(ax,ay,a.size,0,Math.PI*2);
+    ctx.fillStyle=`rgba(180,160,140,${a.alpha})`; ctx.fill();
+  });
+
+  PLANETS.forEach(p => {
+    const angle=p.angle+t*p.speed*0.003;
+    const orbitRx=p.orbitR*W*0.88, orbitRy=p.orbitR*W*0.22;
+    const px=sx+Math.cos(angle)*orbitRx, py=sy+Math.sin(angle)*orbitRy;
+    if (py<H+40 && py>-40 && px>-40 && px<W+40) {
+      if (p.rings) {
+        ctx.save(); ctx.translate(px,py); ctx.scale(2.4,0.45);
+        ctx.beginPath(); ctx.arc(0,0,p.r+7,0,Math.PI*2);
+        ctx.strokeStyle=`rgba(200,175,110,${p.alpha*0.6})`; ctx.lineWidth=3.5; ctx.stroke(); ctx.restore();
+      }
+      const g2=ctx.createRadialGradient(px-p.r*0.3,py-p.r*0.3,0,px,py,p.r);
+      g2.addColorStop(0,lightenHex(p.color,0.45)); g2.addColorStop(1,p.color);
+      ctx.beginPath(); ctx.arc(px,py,p.r,0,Math.PI*2);
+      ctx.fillStyle=g2; ctx.globalAlpha=p.alpha; ctx.fill();
+      if (p.bands) {
+        ctx.beginPath(); ctx.ellipse(px,py-p.r*0.22,p.r,p.r*0.2,0,0,Math.PI*2);
+        ctx.fillStyle=`rgba(160,100,40,${p.alpha*0.5})`; ctx.fill();
+        ctx.beginPath(); ctx.ellipse(px,py+p.r*0.22,p.r,p.r*0.2,0,0,Math.PI*2);
+        ctx.fillStyle=`rgba(140,80,30,${p.alpha*0.4})`; ctx.fill();
+      }
+      ctx.globalAlpha=1;
+      if (p.moon) {
+        const ma=p.moon.angle+t*p.moon.speed*0.003;
+        const mx=px+Math.cos(ma)*p.moon.orbitR, my=py+Math.sin(ma)*p.moon.orbitR*0.4;
+        ctx.beginPath(); ctx.arc(mx,my,p.moon.r,0,Math.PI*2);
+        ctx.fillStyle=p.moon.color; ctx.globalAlpha=p.alpha*0.8; ctx.fill(); ctx.globalAlpha=1;
+      }
+    }
+  });
+
+  for (let i=SHOOTS.length-1; i>=0; i--) {
+    const s=SHOOTS[i];
+    s.x+=Math.cos(s.angle)*s.speed; s.y+=Math.sin(s.angle)*s.speed; s.life-=0.018;
+    if (s.life<=0) { SHOOTS.splice(i,1); continue; }
+    const tx2=s.x-Math.cos(s.angle)*s.len, ty2=s.y-Math.sin(s.angle)*s.len;
+    const grad=ctx.createLinearGradient(tx2,ty2,s.x,s.y);
+    grad.addColorStop(0,'rgba(255,255,240,0)'); grad.addColorStop(1,`rgba(255,255,220,${s.life*0.7})`);
+    ctx.beginPath(); ctx.moveTo(tx2,ty2); ctx.lineTo(s.x,s.y);
+    ctx.strokeStyle=grad; ctx.lineWidth=1.2; ctx.stroke();
+  }
+
+  requestAnimationFrame(frame);
+}
+frame();
+
+// ── SCROLL REVEALS ──
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
